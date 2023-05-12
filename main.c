@@ -102,12 +102,27 @@ void	free_buffers(t_d *d)
 	free(d->buffer1_start);
 }
 
+void	buffer_shuffle(t_d *d)
+{
+	long	n;
+
+	n = (rand() % (d->i) / 5);
+	d->buffer += (rand() % (d->i - n));
+	d->buffer1 += d->i;
+	d->buffer1 -= (rand() % (d->i - n));
+	memmove(d->buffer1, d->buffer, n);
+	d->buffer1 = d->buffer1_start;
+	d->buffer = d->buffer_start;
+}
+
 int	main()
 {
 	t_d	d;
 	int	index;
+	int index1;
 
-	index = 100;
+	index = 50;
+	index1 = 5;
 	dinit(&d);
 	file_to_buffer(&d);
 	srand(time(0));
@@ -115,6 +130,11 @@ int	main()
 	{
 		buffer_to_buffer(&d);
 		index--;
+	}
+	while (index1)
+	{
+	buffer_shuffle(&d);
+	index1--;
 	}
 	buffer_to_file(&d);
 	free_buffers(&d);
