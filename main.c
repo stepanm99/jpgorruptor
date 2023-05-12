@@ -24,7 +24,7 @@ void	dinit(t_d *d)
 
 void	file_to_buffer(t_d *d)
 {
-	d->fileptr = fopen("input.jpg", "rb");
+	d->fileptr = fopen("input.bmp", "rb");
 	fseek(d->fileptr, 0, SEEK_END);
 	d->flen = ftell(d->fileptr);
 	rewind(d->fileptr);
@@ -49,7 +49,8 @@ void	file_to_buffer(t_d *d)
 
 void	buffer_to_file(t_d *d)
 {
-	d->fileptr = fopen("output.jpg", "wb");
+	d->buffer = d->buffer_start;
+	d->fileptr = fopen("output.bmp", "wb");
 	while (d->i != 0)
 	{
 		fprintf(d->fileptr, "%c", *d->buffer1);
@@ -104,13 +105,67 @@ void	free_buffers(t_d *d)
 
 void	buffer_shuffle(t_d *d)
 {
-	long	n;
+	long	rn;
+	long	s1;
+	long	s2;
 
-	n = (rand() % (d->i) / 5);
-	d->buffer += (rand() % (d->i - n));
-	d->buffer1 += d->i;
-	d->buffer1 -= (rand() % (d->i - n));
-	memmove(d->buffer1, d->buffer, n);
+	rn = (rand() % ((d->i) / 2));
+	s1 = (d->i - (rand() % (d->i / 2))) / 2;
+	s2 = (d->i - (rand() % (d->i / 2))) / 4;
+	if ((s1 + rn) > d->i || (s2 + rn) > d->i)
+		buffer_shuffle(d);
+	d->buffer += s1;
+	d->buffer1 += s2;
+	memmove(d->buffer, d->buffer1, rn);
+	d->buffer1 = d->buffer1_start;
+	d->buffer = d->buffer_start;
+}
+
+void	random_minus(t_d *d)
+{
+	long	rn;
+	long	rl;
+	long	rv;
+	long	k;
+
+	rv = rand() % 10;
+	rn = rand() % d->i;
+	rl = rand() % (d->i / 20);
+	k = d->i;
+	d->buffer1 = d->buffer1_start;
+	d->buffer = d->buffer_start;
+	while (k != 0)
+	{
+		if (k == rn)
+		{
+			while (rl != 0 && k != 0)
+			{
+				if ((*d->buffer - rv) > 0)
+					*d->buffer1 = (*d->buffer - rv);
+				else
+					*d->buffer1 = *d->buffer;
+				d->buffer++;
+				d->buffer1++;
+				k--;
+				rl--;
+			}
+		}
+		*d->buffer1 = *d->buffer;
+		d->buffer++;
+		d->buffer1++;
+		k--;
+		
+	}
+	d->buffer1 = d->buffer1_start;
+	d->buffer = d->buffer_start;
+	k = d->i;
+	while (k != 0)
+	{
+		*d->buffer = *d->buffer1;
+		d->buffer++;
+		d->buffer1++;
+		k--;
+	}
 	d->buffer1 = d->buffer1_start;
 	d->buffer = d->buffer_start;
 }
@@ -133,8 +188,14 @@ int	main()
 	}
 	while (index1)
 	{
-	buffer_shuffle(&d);
-	index1--;
+		buffer_shuffle(&d);
+		index1--;
+	}
+	index1 = 5;
+	while (index1)
+	{
+		random_minus(&d);
+		index1--;
 	}
 	buffer_to_file(&d);
 	free_buffers(&d);
