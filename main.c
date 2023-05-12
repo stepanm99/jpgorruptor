@@ -176,7 +176,7 @@ int	main()
 	int	index;
 	int index1;
 
-	index = 50;
+	index = 50000;
 	index1 = 5;
 	dinit(&d);
 	file_to_buffer(&d);
