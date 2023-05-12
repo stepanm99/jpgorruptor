@@ -3,54 +3,120 @@
 #include <string.h>
 #include <time.h>
 
-int	main()
-{
+typedef struct s_d {
+	char	filename_i[50];
+	char	filename_o[50];
 	FILE	*fileptr;
 	char	*buffer;
+	char	*buffer1;
 	char	*buffer_start;
+	char	*buffer1_start;
 	long	flen;
 	long	i;
-	long	rn;
-	char	rv;
+	long	rn;				//random number
+	long	rv;				//random value
+}	t_d;
 
-	i = 0;
-	srand(time(0));
-	fileptr = fopen("input.jpg", "rb");
-	fseek(fileptr, 0, SEEK_END);
-	flen = ftell(fileptr);
-	rewind(fileptr);
-	buffer = (char *)malloc((flen + 1) * sizeof(char));
-	if (!buffer)
+void	dinit(t_d *d)
+{
+	d->i = 0;
+}
+
+void	file_to_buffer(t_d *d)
+{
+	d->fileptr = fopen("input.jpg", "rb");
+	fseek(d->fileptr, 0, SEEK_END);
+	d->flen = ftell(d->fileptr);
+	rewind(d->fileptr);
+	d->buffer = (char *)malloc((d->flen + 1) * sizeof(char));
+	d->buffer1 = (char *)malloc((d->flen + 1) * sizeof(char));
+	if (!d->buffer || !d->buffer1)
 	{
 		printf("Allocation failed :(\n");
-		return (0);
+		return ;
 	}
-	buffer_start = buffer;
-	while (i < flen)
+	d->buffer_start = d->buffer;
+	d->buffer1_start = d->buffer1;
+	while (d->i < d->flen)
 	{
-		fread(buffer, 1, 1, fileptr);
-		buffer++;
-		i++;
+		fread(d->buffer, 1, 1, d->fileptr);
+		d->buffer++;
+		d->i++;
 	}
-	fclose(fileptr);
-	buffer = buffer_start;
+	fclose(d->fileptr);
+	d->buffer = d->buffer_start;
+}
 
-	rn = rand() % flen;
-	rv = rand() % 250;
-	fopen("output.jpg", "wb");
-	while (i != 0)
+void	buffer_to_file(t_d *d)
+{
+	d->fileptr = fopen("output.jpg", "wb");
+	while (d->i != 0)
 	{
-		if (i == rn)
-		{
-			fprintf(fileptr, "%c", rv);
-			buffer++;
-			i--;
-		}
-		fprintf(fileptr, "%c", *buffer);
-		buffer++;
-		i--;
+		fprintf(d->fileptr, "%c", *d->buffer1);
+		d->buffer1++;
+		d->i--;
 	}
-	fclose(fileptr);
-	free(buffer_start);
+	fclose(d->fileptr);
+}
+
+void	buffer_to_buffer(t_d *d)
+{
+	long	k;
+
+	k = d->i;
+	d->buffer1 = d->buffer1_start;
+	d->buffer = d->buffer_start;
+	d->rn = rand() % k;
+	d->rv = rand() % 250;
+	while (k != 0)
+	{
+		if (k == d->rn)
+		{
+			*d->buffer1 = (char)d->rv;
+			k--;
+			d->buffer++;
+			d->buffer1++;
+		}
+		*d->buffer1 = *d->buffer;
+		d->buffer++;
+		d->buffer1++;
+		k--;
+	}
+	d->buffer1 = d->buffer1_start;
+	d->buffer = d->buffer_start;
+	k = d->i;
+	while (k != 0)
+	{
+		*d->buffer = *d->buffer1;
+		d->buffer++;
+		d->buffer1++;
+		k--;
+	}
+	d->buffer1 = d->buffer1_start;
+	d->buffer = d->buffer_start;
+}
+
+void	free_buffers(t_d *d)
+{
+	free(d->buffer_start);
+	free(d->buffer1_start);
+}
+
+int	main()
+{
+	t_d	d;
+	int	index;
+
+	index = 100;
+	dinit(&d);
+	file_to_buffer(&d);
+	srand(time(0));
+	while (index)
+	{
+		buffer_to_buffer(&d);
+		index--;
+	}
+	buffer_to_file(&d);
+	free_buffers(&d);
 	return (0);
 }
