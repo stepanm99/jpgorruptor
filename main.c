@@ -15,15 +15,21 @@ typedef struct s_d {
 	long	i;
 	long	rn;				//random number
 	long	rv;				//random value
+	long	s1;
+	long	s2;
 }	t_d;
 
 void	dinit(t_d *d)
 {
 	d->i = 0;
+//	d->s1 = 500000;
+//	d->s2 = d->s1 + 5000;
+//	d->rn = 5000;
 }
 
 void	file_to_buffer(t_d *d)
 {
+	printf("file to buffer\n");
 	d->fileptr = fopen("input.bmp", "rb");
 	fseek(d->fileptr, 0, SEEK_END);
 	d->flen = ftell(d->fileptr);
@@ -45,12 +51,30 @@ void	file_to_buffer(t_d *d)
 	}
 	fclose(d->fileptr);
 	d->buffer = d->buffer_start;
+	memmove(d->buffer1, d->buffer, d->flen);
 }
 
 void	buffer_to_file(t_d *d)
 {
+	printf("buffer to file\n");
+	d->i = d->flen;
 	d->buffer = d->buffer_start;
 	d->fileptr = fopen("output.bmp", "wb");
+	while (d->i != 0)
+	{
+		fprintf(d->fileptr, "%c", *d->buffer);
+		d->buffer++;
+		d->i--;
+	}
+	fclose(d->fileptr);
+}
+
+void	buffer1_to_file(t_d *d)
+{
+	printf("buffer1 to file\n");
+	d->i = d->flen;
+	d->buffer1 = d->buffer1_start;
+	d->fileptr = fopen("output1.bmp", "wb");
 	while (d->i != 0)
 	{
 		fprintf(d->fileptr, "%c", *d->buffer1);
@@ -62,6 +86,7 @@ void	buffer_to_file(t_d *d)
 
 void	buffer_to_buffer(t_d *d)
 {
+	printf("buffer to buffer\n");
 	long	k;
 
 	k = d->i;
@@ -105,24 +130,31 @@ void	free_buffers(t_d *d)
 
 void	buffer_shuffle(t_d *d)
 {
+	printf("buffer shuffle\n");
 	long	rn;
 	long	s1;
 	long	s2;
 
-	rn = (rand() % ((d->i) / 2));
-	s1 = (d->i - (rand() % (d->i / 2))) / 2;
-	s2 = (d->i - (rand() % (d->i / 2))) / 4;
-	if ((s1 + rn) > d->i || (s2 + rn) > d->i)
-		buffer_shuffle(d);
-	d->buffer += s1;
-	d->buffer1 += s2;
-	memmove(d->buffer, d->buffer1, rn);
 	d->buffer1 = d->buffer1_start;
 	d->buffer = d->buffer_start;
+	rn = (rand() % ((d->flen)) / 4);
+	s1 = (d->flen - (rand() % (d->flen / 2)));
+	s2 = (d->flen - (rand() % (d->flen / 2)));
+	printf("s1: %lu\ns2: %lu\nrn: %lu\n\n", s1, s2, rn);
+	if ((s1 + rn) > d->flen || (s2 + rn) > d->flen)
+	{
+		printf("buffer overflow!\n");
+		return ;
+	}
+	d->buffer += s1;
+	d->buffer1 += d->flen - s2;
+	memmove(d->buffer, d->buffer1, rn);
+	memmove(d->buffer1, d->buffer, d->flen);
 }
 
 void	random_minus(t_d *d)
 {
+	printf("random minus\n");
 	long	rn;
 	long	rl;
 	long	rv;
@@ -176,8 +208,10 @@ int	main()
 	int	index;
 	int index1;
 
-	index = 50000;
-	index1 = 5;
+	printf("How many random bytes: ");;
+	scanf("%i", &index);
+	printf("\nHow many shuffles: ");
+	scanf("%i", &index1);
 	dinit(&d);
 	file_to_buffer(&d);
 	srand(time(0));
@@ -189,15 +223,18 @@ int	main()
 	while (index1)
 	{
 		buffer_shuffle(&d);
+//		printf("s1: %lu\ns2: %lu\n\n", d.s1, d.s2);
 		index1--;
 	}
-	index1 = 5;
+	index1 = 0;
 	while (index1)
 	{
 		random_minus(&d);
 		index1--;
 	}
+
 	buffer_to_file(&d);
+	buffer1_to_file(&d);
 	free_buffers(&d);
 	return (0);
 }
