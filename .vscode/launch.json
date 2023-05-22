@@ -1,0 +1,32 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+	  {
+		"name": "(lldb) Launch",
+		"type": "cppdbg",
+		"request": "launch",
+		"program": "${workspaceFolder}/prog",
+		"args": [],
+		"stopAtEntry": false,
+		"cwd": "${workspaceFolder}",
+		"environment": [],
+		"externalConsole": false,
+		"MIMode": "lldb"
+	  },
+	  {
+		"name": "(lldb) Attach",
+		"type": "cppdbg",
+		"program": "${workspaceFolder}/prog",
+		"request": "attach",
+		"processId": "${command:pickProcess}"
+	  },
+	  {
+		"name": "C/C++ Runner: Debug Session",
+		"type": "lldb",
+		"request": "launch",
+		"args": [],
+		"cwd": "/Users/smelicha/Documents/ft_printf/ft_printf",
+		"program": "/Users/smelicha/Documents/ft_printf/ft_printf/prog"
+	  }
+	]
+}

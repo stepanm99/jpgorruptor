@@ -1,0 +1,7 @@
+DIFFERENT VALUES OF UNSIGNED
+
+So it appears that the difference is because I use unsigned long even for unsigned int.
+So theoretically by using sizeof I can determine into which type to recast the value.
+Once I do that the printed value should be the same with my and library function.
+
+TODO:
